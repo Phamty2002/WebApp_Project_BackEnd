@@ -16,9 +16,11 @@ app.use(express.json());
 // CORS configuration
 // Replace 'https://your-frontend.vercel.app' with your actual frontend application URL
 const corsOptions = {
-  origin: 'https://web-app-project-front-end.vercel.app/',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  origin: 'https://web-app-project-front-end.vercel.app',
+  optionsSuccessStatus: 200
 };
+
+app.use(cors(corsOptions));
 
 // Enable CORS with the above options
 app.use(cors(corsOptions));
