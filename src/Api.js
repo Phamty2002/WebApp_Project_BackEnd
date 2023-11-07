@@ -6,11 +6,8 @@ const signupRoutes = require('./routes/signup');
 const productsRoutes = require('./routes/products');
 const cors = require('cors');
 const app = express();
-const path = require('path');
 
 
-// Serve images as static files
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 // Serve Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
