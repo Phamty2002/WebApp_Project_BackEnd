@@ -25,8 +25,6 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
-app.use(cors(corsOptions));
-
 // Enable CORS with the above options
 app.use(cors(corsOptions));
 
