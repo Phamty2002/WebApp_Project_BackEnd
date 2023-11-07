@@ -6,6 +6,7 @@ const signupRoutes = require('./routes/signup');
 const productsRoutes = require('./routes/products');
 const cors = require('cors');
 const app = express();
+const path = require('path');
 
 
 // Serve images as static files
