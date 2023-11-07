@@ -6,6 +6,7 @@ WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
+COPY . .
 
 # Install any needed packages
 RUN npm install
@@ -16,8 +17,6 @@ COPY . .
 # Make port available to the world outside this container
 EXPOSE 3001
 
-# Define environment variable
-ENV NODE_ENV production
 
 # Run the app when the container launches
 CMD ["node", "src/Api.js"]
