@@ -6,6 +6,7 @@ const signupRoutes = require('./routes/signup');
 const productsRoutes = require('./routes/products');
 const cors = require('cors');
 const app = express();
+require('dotenv').config();
 
 
 
@@ -22,6 +23,25 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
+const jwtSecret = process.env.JWT_SECRET;
+const jwt = require('jsonwebtoken');
+
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(' ')[1];
+    
+    jwt.verify(token, jwtSecret, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      req.user = user;
+      next();
+    });
+  } else {
+    res.sendStatus(401);
+  }
+};
 
 // Enable CORS with the above options
 app.use(cors(corsOptions));
@@ -30,6 +50,7 @@ app.use(cors(corsOptions));
 app.use('/api/login', loginRoutes);
 app.use('/api/signup', signupRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/products', verifyToken, productsRoutes);
 
 // Error handling middleware (example)
 app.use((err, req, res, next) => {

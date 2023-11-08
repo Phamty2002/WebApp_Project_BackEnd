@@ -1,6 +1,8 @@
-// controllers/loginController.js
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const db = require('../db');
+require('dotenv').config();
+
 
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -26,7 +28,23 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    // Authentication successful, proceed with token creation or session management
-    return res.status(200).json({ message: 'Login successful' });
+    const jwtSecret = process.env.JWT_SECRET;
+    // Create a token with the user role
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, role: user.role },
+      jwtSecret, // Use an environment variable for the secret key
+      { expiresIn: '24h' }
+    );
+
+    // Authentication successful, return the token and user data
+    return res.status(200).json({
+      message: 'Login successful',
+      token: token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role
+      }
+    });
   });
 };
