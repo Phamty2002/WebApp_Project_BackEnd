@@ -18,9 +18,10 @@ app.use(express.json());
 // CORS configuration
 // Replace 'https://your-frontend.vercel.app' with your actual frontend application URL
 const corsOptions = {
-  origin: 'https://web-app-project-front-end.vercel.app',
+  origin: ['https://web-app-project-front-end.vercel.app', 'http://localhost:3000'],
   optionsSuccessStatus: 200
 };
+
 
 // Enable CORS with the above options
 app.use(cors(corsOptions));
