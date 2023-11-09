@@ -1,65 +1,45 @@
 const express = require('express');
-const swaggerSpec = require('./swagger'); // Import your Swagger specification
-const swaggerUi = require('swagger-ui-express'); // Import swagger-ui-express
-const loginRoutes = require('./routes/login'); // Import your auth routes
+const swaggerUi = require('swagger-ui-express');
+const loginRoutes = require('./routes/login');
 const signupRoutes = require('./routes/signup');
 const productsRoutes = require('./routes/products');
+const profileRoutes = require('./routes/profile');
 const cors = require('cors');
 const app = express();
+const { verifyToken } = require('./middleware/authMiddleware'); // Import the verifyToken middleware
 require('dotenv').config();
 
-
-
 // Serve Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('./swagger')));
 
 // Use built-in middleware for json
 app.use(express.json());
 
 // CORS configuration
-// Replace 'https://your-frontend.vercel.app' with your actual frontend application URL
 const corsOptions = {
   origin: ['https://web-app-project-front-end.vercel.app', 'http://localhost:3000'],
   optionsSuccessStatus: 200
 };
-
-const jwtSecret = process.env.JWT_SECRET;
-const jwt = require('jsonwebtoken');
-
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader) {
-    const token = authHeader.split(' ')[1];
-    
-    jwt.verify(token, jwtSecret, (err, user) => {
-      if (err) {
-        return res.sendStatus(403);
-      }
-      req.user = user;
-      next();
-    });
-  } else {
-    res.sendStatus(401);
-  }
-};
-
-// Enable CORS with the above options
 app.use(cors(corsOptions));
 
-// Configure routes without passing the db object
+const bodyParser = require("body-parser");
+app.use(bodyParser.json());
+
+// Configure routes
 app.use('/api/login', loginRoutes);
 app.use('/api/signup', signupRoutes);
 app.use('/api/products', productsRoutes);
-app.use('/api/products', verifyToken, productsRoutes);
+app.use('/api/products', verifyToken, productsRoutes); // Protect all product routes
+app.use('/api/profile', verifyToken, profileRoutes); // Protect profile routes
 
-// Error handling middleware (example)
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
 
-// Add the app.listen method to start the server
-const port = process.env.PORT || 3001; // Specify the port you want to listen on
+// Start the server
+const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
