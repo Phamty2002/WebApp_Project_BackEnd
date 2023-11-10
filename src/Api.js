@@ -3,16 +3,16 @@ const swaggerUi = require('swagger-ui-express');
 const loginRoutes = require('./routes/login');
 const signupRoutes = require('./routes/signup');
 const productsRoutes = require('./routes/products');
+const orderRoutes = require('./routes/orderRoutes'); // Add this line
 const profileRoutes = require('./routes/profile');
 const cors = require('cors');
 const app = express();
-const { verifyToken } = require('./middleware/authMiddleware'); // Import the verifyToken middleware
+const { verifyToken } = require('./middleware/authMiddleware');
 require('dotenv').config();
 
 // Serve Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('./swagger')));
 
-// Use built-in middleware for json
 app.use(express.json());
 
 // CORS configuration
@@ -31,6 +31,7 @@ app.use('/api/signup', signupRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/products', verifyToken, productsRoutes); // Protect all product routes
 app.use('/api/profile', verifyToken, profileRoutes); // Protect profile routes
+app.use('/api/orders', orderRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
