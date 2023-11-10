@@ -1,6 +1,38 @@
 // controllers/profileController.js
 
 const db = require('../db');
+const bcrypt = require('bcrypt');
+const saltRounds = 10; 
+
+
+exports.addNewUser = (req, res) => {
+  // Extract the user details from the request body
+  const { username, email, password, role } = req.body;
+
+  // Hash the password before saving it to the database
+  bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+    if (err) {
+      console.error('Error hashing the password:', err);
+      return res.status(500).json({ message: 'Error registering the user.' });
+    } 
+
+  // Construct the SQL query to insert a new user
+  const query = 'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)';
+  const values = [username, email, hashedPassword, role];
+
+  // Execute the query
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error('Error adding new user:', err);
+      return res.status(500).json({ message: 'Error adding new user.' });
+    }
+
+    // If the user was successfully added, send back a success message
+    // You might also want to send back the ID of the new user, but be careful not to expose sensitive information
+    return res.status(201).json({ message: 'New user added successfully.' });
+  });
+});
+};
 
 exports.getProfileByUsername = (req, res) => {
   const username = req.params.username; // Get the username from request parameters
@@ -53,5 +85,24 @@ exports.listAllUsers = (req, res) => {
     } else {
       return res.status(404).json({ message: 'No users found.' });
     }
+  });
+};
+
+//Delete a user by username
+exports.deleteUserByUsername = (req, res) => {
+  const { username } = req.params; // assuming you pass the product name as a URL parameter
+
+  db.query('DELETE FROM users WHERE username = ?', [username], (err, result) => {
+    if (err) {
+      console.error('Error deleting user:', err);
+      return res.status(500).json({ message: 'Error deleting user.' });
+    }
+    if (result.affectedRows === 0) {
+      // If no rows are affected, it means the user was not found
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // If the user was successfully deleted, send back a success message
+    return res.status(200).json({ message: 'User deleted successfully.' });
   });
 };

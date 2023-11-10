@@ -48,7 +48,7 @@ const router = express.Router();
  *   post:
  *     summary: Register a new user account.
  *     tags: [Authentication]
- *     description: This endpoint is responsible for creating a new user account in the system. It accepts a username, password, and email, and if the username and email are not already taken, it creates a new user record.
+ *     description: This endpoint is responsible for creating a new user account in the system. It accepts a username, password, and email, and if the username and email are not already taken, it creates a new user record and the password is hashed before being stored.
  *     requestBody:
  *       required: true
  *       description: Payload containing the new user's credentials.
