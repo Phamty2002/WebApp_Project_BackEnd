@@ -1,75 +1,70 @@
-const db = require('../db');
+// src/controllers/orderController.js
 
-const orderController = {
-    // Create a new order
-    createOrder: async (req, res) => {
-        try {
-            const { users_id, status } = req.body;
-            const [result] = await db.execute('INSERT INTO orders (users_id, status) VALUES (?, ?)', [users_id, status]);
-            res.status(201).json({ message: 'Order created', orderId: result.insertId });
-        } catch (error) {
-            res.status(500).json({ message: 'Error creating order', error });
-        }
-    },
+const db = require('../db.js'); // Make sure this path is correct
 
-    // Get all orders
-    getAllOrders: async (req, res) => {
-        try {
-            const [orders] = await db.query('SELECT * FROM orders');
-            res.status(200).json(orders);
-        } catch (error) {
-            res.status(500).json({ message: 'Error fetching orders', error });
-        }
-    },
+exports.placeOrder = (req, res) => {
+    const { userId, items } = req.body; // Expecting items to be an array of { productId, quantity }
 
-    // Get a single order by ID
-    getOrderById: async (req, res) => {
-        try {
-            const orderId = req.params.id;
-            const [orders] = await db.query('SELECT * FROM orders WHERE id = ?', [orderId]);
-
-            if (orders.length === 0) {
-                return res.status(404).json({ message: 'Order not found' });
-            }
-
-            res.status(200).json(orders[0]);
-        } catch (error) {
-            res.status(500).json({ message: 'Error fetching order', error });
-        }
-    },
-
-    // Update an order
-    updateOrder: async (req, res) => {
-        try {
-            const orderId = req.params.id;
-            const { users_id, status } = req.body;
-            const [result] = await db.execute('UPDATE orders SET users_id = ?, status = ? WHERE id = ?', [users_id, status, orderId]);
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: 'Order not found' });
-            }
-
-            res.status(200).json({ message: 'Order updated' });
-        } catch (error) {
-            res.status(500).json({ message: 'Error updating order', error });
-        }
-    },
-
-    // Delete an order
-    deleteOrder: async (req, res) => {
-        try {
-            const orderId = req.params.id;
-            const [result] = await db.execute('DELETE FROM orders WHERE id = ?', [orderId]);
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: 'Order not found' });
-            }
-
-            res.status(200).json({ message: 'Order deleted' });
-        } catch (error) {
-            res.status(500).json({ message: 'Error deleting order', error });
-        }
+    if (!items || items.length === 0) {
+        return res.status(400).send('No items specified for the order');
     }
+
+    db.beginTransaction(err => {
+        if (err) {
+            return res.status(500).send('Error starting transaction');
+        }
+
+        db.query('INSERT INTO orders (users_id) VALUES (?)', [userId], (error, results) => {
+            if (error) {
+                return db.rollback(() => {
+                    res.status(500).send('Error inserting order');
+                });
+            }
+
+            const orderId = results.insertId;
+            const orderItems = items.map(item => [orderId, item.productId, item.quantity]);
+
+            db.query('INSERT INTO order_items (order_id, product_id, quantity) VALUES ?', [orderItems], (error) => {
+                if (error) {
+                    return db.rollback(() => {
+                        res.status(500).send('Error inserting order items');
+                    });
+                }
+
+                db.commit(err => {
+                    if (err) {
+                        return db.rollback(() => {
+                            res.status(500).send('Error committing transaction');
+                        });
+                    }
+                    res.status(201).send(`Order placed successfully with ID: ${orderId}`);
+                });
+            });
+        });
+    });
 };
 
-module.exports = orderController;
+exports.getOrder = (req, res) => {
+    const orderId = req.params.id;
+
+    db.query('SELECT * FROM orders WHERE id = ?', [orderId], (error, orders) => {
+        if (error) {
+            return res.status(500).send('Error retrieving order');
+        }
+
+        if (orders.length === 0) {
+            return res.status(404).send('Order not found');
+        }
+
+        db.query('SELECT * FROM order_items WHERE order_id = ?', [orderId], (error, items) => {
+            if (error) {
+                return res.status(500).send('Error retrieving order items');
+            }
+
+            res.json({
+                order: orders[0],
+                items: items
+            });
+        });
+    });
+};
