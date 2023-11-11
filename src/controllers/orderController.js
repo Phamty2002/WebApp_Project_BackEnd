@@ -2,46 +2,75 @@
 
 const db = require('../db.js'); // Make sure this path is correct
 
+// Function to get product price by ID
+function getProductPrice(productId) {
+    return new Promise((resolve, reject) => {
+        db.query('SELECT price FROM products WHERE id = ?', [productId], (error, results) => {
+            if (error) {
+                return reject(error);
+            }
+            if (results.length === 0) {
+                return reject(new Error('Product not found'));
+            }
+            resolve(results[0].price);
+        });
+    });
+}
+
 exports.placeOrder = (req, res) => {
-    const { userId, items, addressShipping } = req.body; // Now expecting addressShipping too
+    const { userId, items, addressShipping } = req.body; // Corrected to addressShipping
 
-    if (!items || items.length === 0) {
-        return res.status(400).send('No items specified for the order');
-    }
-
-    db.beginTransaction(err => {
+    db.beginTransaction(async (err) => {
         if (err) {
             return res.status(500).send('Error starting transaction');
         }
 
-        // Include addressShipping in the INSERT query
-        db.query('INSERT INTO orders (users_id, addressShipping) VALUES (?, ?)', [userId, addressShipping], (error, results) => {
-            if (error) {
-                return db.rollback(() => {
-                    res.status(500).send('Error inserting order');
-                });
+        try {
+            let totalAmount = 0;
+
+            // Calculate total price
+            for (const item of items) {
+                const price = await getProductPrice(item.productId);
+                totalAmount += price * item.quantity;
             }
 
-            const orderId = results.insertId;
-            const orderItems = items.map(item => [orderId, item.productId, item.quantity]);
-
-            db.query('INSERT INTO order_items (order_id, product_id, quantity) VALUES ?', [orderItems], (error) => {
+            // Create order with total amount and addressShipping
+            db.query('INSERT INTO orders (users_id, total_amount, addressShipping) VALUES (?, ?, ?)', 
+                     [userId, totalAmount, addressShipping], (error, orderResult) => {
                 if (error) {
                     return db.rollback(() => {
-                        res.status(500).send('Error inserting order items');
+                        res.status(500).send('Error inserting order');
                     });
                 }
 
-                db.commit(err => {
+                const orderId = orderResult.insertId;
+
+                // Add items to order_items
+                items.forEach(item => {
+                    db.query('INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)', 
+                             [orderId, item.productId, item.quantity], (error) => {
+                        if (error) {
+                            return db.rollback(() => {
+                                res.status(500).send('Error inserting order items');
+                            });
+                        }
+                    });
+                });
+
+                db.commit((err) => {
                     if (err) {
                         return db.rollback(() => {
                             res.status(500).send('Error committing transaction');
                         });
                     }
-                    res.status(201).send(`Order placed successfully with ID: ${orderId}`);
+                    res.status(201).json({ orderId: orderId, totalAmount: totalAmount });
                 });
             });
-        });
+        } catch (error) {
+            db.rollback(() => {
+                res.status(500).send('Error processing order');
+            });
+        }
     });
 };
 
@@ -72,7 +101,7 @@ exports.getOrder = (req, res) => {
 
 exports.updateOrder = (req, res) => {
     const orderId = req.params.id;
-    const { status, addressShipping } = req.body; // Add other fields as needed
+    const { status, addressShipping, paymentStatus } = req.body; // Added paymentStatus
 
     let updateQuery = 'UPDATE orders SET ';
     let updateValues = [];
@@ -85,6 +114,11 @@ exports.updateOrder = (req, res) => {
     if (addressShipping) {
         updateQuery += 'addressShipping = ?, ';
         updateValues.push(addressShipping);
+    }
+
+    if (paymentStatus) {
+        updateQuery += 'payment_status = ?, '; // Now handling payment_status
+        updateValues.push(paymentStatus);
     }
 
     // Remove trailing comma and space
@@ -110,6 +144,7 @@ exports.updateOrder = (req, res) => {
         res.status(400).send('No valid fields provided for update');
     }
 };
+
 
 exports.deleteOrder = (req, res) => {
     const orderId = req.params.id;
