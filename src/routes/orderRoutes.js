@@ -1,17 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const ordersController = require('../controllers/orderController');
+const orderController = require('../controllers/orderController');
 
-// POST request to create a new order
-router.post('/', ordersController.createOrder);
-
-// GET request to retrieve a specific order
-router.get('/:orderId', ordersController.getOrder);
-
-// PUT request to update a specific order
-router.put('/:orderId', ordersController.updateOrder);
-
-// DELETE request to delete a specific order
-router.delete('/:orderId', ordersController.deleteOrder);
+// Define your routes here
+router.post('/', orderController.createOrder);
+router.get('/', orderController.getAllOrders);
+router.get('/:id', orderController.getOrderById);
+router.put('/:id', orderController.updateOrder);
+router.delete('/:id', orderController.deleteOrder);
 
 module.exports = router;
