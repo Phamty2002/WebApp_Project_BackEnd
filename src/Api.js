@@ -33,7 +33,6 @@ app.use('/api/products', verifyToken, productsRoutes); // Protect all product ro
 app.use('/api/profile', verifyToken, profileRoutes); // Protect profile routes
 app.use('/api/orders', orderRoutes);
 
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

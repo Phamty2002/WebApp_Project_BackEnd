@@ -77,16 +77,30 @@ exports.placeOrder = (req, res) => {
 exports.getOrder = (req, res) => {
     const orderId = req.params.id;
 
-    db.query('SELECT * FROM orders WHERE id = ?', [orderId], (error, orders) => {
+    // Query to retrieve order details including user information
+    const orderQuery = `
+        SELECT o.*, u.username, u.email
+        FROM orders o
+        JOIN users u ON o.users_id = u.id
+        WHERE o.id = ?`;
+
+    db.query(orderQuery, [orderId], (error, orders) => {
         if (error) {
-            return res.status(500).send('Error retrieving order');
+            return res.status(500).send('Error retrieving order with user info');
         }
 
         if (orders.length === 0) {
             return res.status(404).send('Order not found');
         }
 
-        db.query('SELECT * FROM order_items WHERE order_id = ?', [orderId], (error, items) => {
+        // Updated query to include product name along with other item details
+        const itemsQuery = `
+            SELECT oi.order_id, oi.product_id, oi.quantity, p.image_path, p.name
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ?`;
+
+        db.query(itemsQuery, [orderId], (error, items) => {
             if (error) {
                 return res.status(500).send('Error retrieving order items');
             }
@@ -98,6 +112,9 @@ exports.getOrder = (req, res) => {
         });
     });
 };
+
+
+
 
 exports.updateOrder = (req, res) => {
     const orderId = req.params.id;
