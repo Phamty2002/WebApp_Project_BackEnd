@@ -97,7 +97,7 @@ const swaggerSpec = require('../swagger');
  *   put:
  *     summary: Update an existing order.
  *     tags: [Orders]
- *     description: Modify details of an existing order.
+ *     description: Modify details of an existing order, such as its status, shipping address, and payment status.
  *     parameters:
  *       - in: path
  *         name: id
@@ -110,7 +110,20 @@ const swaggerSpec = require('../swagger');
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Order'
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 description: New status of the order (e.g., pending, shipped, delivered).
+ *                 example: shipped
+ *               addressShipping:
+ *                 type: string
+ *                 description: New shipping address for the order.
+ *                 example: "456 Elm St, OtherTown, USA"
+ *               paymentStatus:
+ *                 type: string
+ *                 description: Current payment status of the order (e.g., paid, pending, failed).
+ *                 example: paid
  *     responses:
  *       '200':
  *         description: Order updated successfully.
