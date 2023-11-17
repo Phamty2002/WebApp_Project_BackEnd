@@ -18,8 +18,7 @@ function getProductPrice(productId) {
 }
 
 exports.placeOrder = (req, res) => {
-    const { userId, items, addressShipping } = req.body; // Corrected to addressShipping
-
+    const { userId, items, addressShipping } = req.body;
     db.beginTransaction(async (err) => {
         if (err) {
             return res.status(500).send('Error starting transaction');
@@ -118,7 +117,7 @@ exports.getOrder = (req, res) => {
 
 exports.updateOrder = (req, res) => {
     const orderId = req.params.id;
-    const { status, addressShipping, paymentStatus } = req.body; // Added paymentStatus
+    const { status, addressShipping, paymentStatus } = req.body; 
 
     let updateQuery = 'UPDATE orders SET ';
     let updateValues = [];
@@ -134,7 +133,7 @@ exports.updateOrder = (req, res) => {
     }
 
     if (paymentStatus) {
-        updateQuery += 'payment_status = ?, '; // Now handling payment_status
+        updateQuery += 'payment_status = ?, '; 
         updateValues.push(paymentStatus);
     }
 
