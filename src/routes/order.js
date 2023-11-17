@@ -162,5 +162,7 @@ router.post('/', orderController.placeOrder);
 router.get('/:id', orderController.getOrder);
 router.put('/:id', orderController.updateOrder);
 router.delete('/:id', orderController.deleteOrder);
+router.get('/user/:userId', orderController.getOrdersByUserId);
+
 
 module.exports = router;

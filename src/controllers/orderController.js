@@ -201,3 +201,46 @@ exports.deleteOrder = (req, res) => {
     });
 };
 
+exports.getOrdersByUserId = (req, res) => {
+    const userId = req.params.userId;
+
+    // Query to retrieve all orders for a specific user
+    const ordersQuery = `
+        SELECT o.*, u.username, u.email
+        FROM orders o
+        JOIN users u ON o.users_id = u.id
+        WHERE o.users_id = ?`;
+
+    db.query(ordersQuery, [userId], (error, orders) => {
+        if (error) {
+            return res.status(500).send('Error retrieving orders');
+        }
+
+        if (orders.length === 0) {
+            return res.status(404).send('No orders found for this user');
+        }
+
+        // Enhanced response to include details of each order's items
+        const fullOrderDetails = orders.map((order) => {
+            const itemsQuery = `
+                SELECT oi.order_id, oi.product_id, oi.quantity, p.image_path, p.name
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = ?`;
+
+            return new Promise((resolve, reject) => {
+                db.query(itemsQuery, [order.id], (error, items) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve({ ...order, items: items });
+                    }
+                });
+            });
+        });
+
+        Promise.all(fullOrderDetails)
+            .then(results => res.json(results))
+            .catch(error => res.status(500).send('Error retrieving order items'));
+    });
+};
