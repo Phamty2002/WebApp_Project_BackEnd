@@ -158,6 +158,36 @@ const swaggerSpec = require('../swagger');
  *         description: Internal server error.
  */
 
+/**
+ * @swagger
+ * /order/user/{userId}:
+ *   get:
+ *     summary: Retrieve orders by user ID.
+ *     tags: [Orders]
+ *     description: Get a list of orders placed by a specific user.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: Unique ID of the user.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: List of orders retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Order'
+ *       '404':
+ *         description: No orders found for this user.
+ *       '500':
+ *         description: Internal server error.
+ */
+
+
 router.post('/', orderController.placeOrder);
 router.get('/:id', orderController.getOrder);
 router.put('/:id', orderController.updateOrder);
