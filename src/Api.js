@@ -5,6 +5,8 @@ const signupRoutes = require('./routes/signup');
 const productsRoutes = require('./routes/products');
 const orderRoutes = require('./routes/order'); // Add this line
 const profileRoutes = require('./routes/profile');
+const paymentRoutes = require('./routes/payment');
+
 const cors = require('cors');
 const app = express();
 const { verifyToken } = require('./middleware/authMiddleware');
@@ -32,6 +34,7 @@ app.use('/api/products', productsRoutes);
 app.use('/api/products', verifyToken, productsRoutes); // Protect all product routes
 app.use('/api/profile', verifyToken, profileRoutes); // Protect profile routes
 app.use('/api/orders', orderRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
