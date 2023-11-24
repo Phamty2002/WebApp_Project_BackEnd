@@ -1,34 +1,39 @@
-// controllers/signupController.js
-
 const db = require('../db');
 const bcrypt = require('bcrypt');
-const saltRounds = 10; // You can adjust the number of salt rounds as needed
+const saltRounds = 10;
 
 exports.registerNewUser = (req, res) => {
-    const { username, password, email } = req.body;
+  const { username, password, email, phone_number } = req.body;
 
-    // Validate input parameters here if needed
+  // Validate input parameters here if needed
+  if (!username || !password || !email || !phone_number) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
 
-    // Check if username or email already exists
-    db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email], (err, rows) => {
+  // Check if username, email, or phone_number already exists
+  db.query(
+    'SELECT * FROM users WHERE username = ? OR email = ? OR phone_number = ?',
+    [username, email, phone_number],
+    (err, rows) => {
       if (err) {
-        // More detailed error handling could be implemented here
-        console.error('Error checking username and email availability:', err);
-        res.status(500).json({ message: 'Error registering the user.' });
-        return;
+        console.error('Error checking availability:', err);
+        return res.status(500).json({ message: 'Error registering the user.' });
       }
 
-      // Check if username or email is already taken
+      // Check if username, email, or phone_number is already taken
       if (rows.length > 0) {
         const userExists = rows.some(u => u.username === username);
         const emailExists = rows.some(u => u.email === email);
+        const phoneExists = rows.some(u => u.phone_number === phone_number);
+
         if (userExists) {
-          res.status(409).json({ message: 'Username already in use.' });
-          return;
+          return res.status(409).json({ message: 'Username already in use.' });
         }
         if (emailExists) {
-          res.status(409).json({ message: 'Email already in use.' });
-          return;
+          return res.status(409).json({ message: 'Email already in use.' });
+        }
+        if (phoneExists) {
+          return res.status(409).json({ message: 'Phone number already in use.' });
         }
       }
 
@@ -36,20 +41,22 @@ exports.registerNewUser = (req, res) => {
       bcrypt.hash(password, saltRounds, (err, hash) => {
         if (err) {
           console.error('Error hashing the password:', err);
-          res.status(500).json({ message: 'Error registering the user.' });
-          return;
+          return res.status(500).json({ message: 'Error registering the user.' });
         }
 
         // Save the new user with the hashed password
-        db.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, hash, email], (err, result) => {
-          if (err) {
-            // Handle specific errors like duplicate entry here
-            console.error('Error registering the user:', err);
-            res.status(500).json({ message: 'Error registering the user.' });
-            return;
+        db.query(
+          'INSERT INTO users (username, password, email, phone_number) VALUES (?, ?, ?, ?)',
+          [username, hash, email, phone_number],
+          (err, result) => {
+            if (err) {
+              console.error('Error registering the user:', err);
+              return res.status(500).json({ message: 'Error registering the user.' });
+            }
+            res.status(201).json({ message: 'User successfully registered.', userId: result.insertId });
           }
-          res.status(201).json({ message: 'User successfully registered.', userId: result.insertId });
-        });
+        );
       });
-    });
+    }
+  );
 };

@@ -1,9 +1,7 @@
-//loginController.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 require('dotenv').config();
-
 
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -14,7 +12,7 @@ exports.loginUser = async (req, res) => {
       console.error('Error checking user credentials:', err);
       return res.status(500).json({ message: 'Error checking credentials.' });
     }
-    
+
     // Check if any user was returned
     if (rows.length === 0) {
       // Avoid revealing that the username does not exist
@@ -38,14 +36,16 @@ exports.loginUser = async (req, res) => {
     );
 
     // Authentication successful, return the token and user data
+    const userData = {
+      id: user.id,
+      username: user.username,
+      role: user.role
+    };
+
     return res.status(200).json({
       message: 'Login successful',
       token: token,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role
-      }
+      user: userData
     });
   });
 };
