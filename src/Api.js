@@ -7,6 +7,10 @@ const orderRoutes = require('./routes/order'); // Add this line
 const profileRoutes = require('./routes/profile');
 const paymentRoutes = require('./routes/payment');
 const saveprofileRoutes = require('./routes/saveprofile');
+const changepasswordRoutes = require('./routes/changepassword');
+const updateUserInfoRoutes = require('./routes/updateUserInfo');
+
+
 
 const cors = require('cors');
 const app = express();
@@ -37,6 +41,8 @@ app.use('/api/profile', verifyToken, profileRoutes); // Protect profile routes
 app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/saveprofile', saveprofileRoutes);
+app.use('/api/changepassword', changepasswordRoutes);
+app.use('/api/update', updateUserInfoRoutes );
 
 // Error handling middleware
 app.use((err, req, res, next) => {
