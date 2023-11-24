@@ -10,7 +10,7 @@ const options = {
     },
   },
   // Define the API endpoints in the 'apis' array below.
-  apis: ['./src/routes/login.js', './src/routes/signup.js', './src/routes/products.js', './src/routes/profile.js', './src/routes/order.js']
+  apis: ['./src/routes/login.js', './src/routes/signup.js', './src/routes/products.js', './src/routes/profile.js', './src/routes/order.js', './src/routes/payment.js']
 };
 
 const swaggerSpec = swaggerJsdoc(options);

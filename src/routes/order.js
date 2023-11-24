@@ -22,6 +22,9 @@ const swaggerSpec = require('../swagger');
  *         - orderDate
  *         - status
  *         - addressShipping
+ *         - totalAmount
+ *         - paymentStatus
+ *         - paymentMethod
  *       properties:
  *         id:
  *           type: integer
@@ -44,6 +47,19 @@ const swaggerSpec = require('../swagger');
  *           type: string
  *           description: Shipping address for the order.
  *           example: "123 Main St, Anytown, USA"
+ *         totalAmount:
+ *           type: number
+ *           format: float
+ *           description: Total amount of the order.
+ *           example: 150.50
+ *         paymentStatus:
+ *           type: string
+ *           description: Current payment status of the order (e.g., paid, pending, failed).
+ *           example: paid
+ *         paymentMethod:
+ *           type: string
+ *           description: Payment method used for the order.
+ *           example: "Credit Card"
  */
 
 /**
@@ -52,7 +68,7 @@ const swaggerSpec = require('../swagger');
  *   post:
  *     summary: Place a new order.
  *     tags: [Orders]
- *     description: Create a new order with specified items and shipping address.
+ *     description: Create a new order with specified items, total amount, and shipping address.
  *     requestBody:
  *       required: true
  *       content:

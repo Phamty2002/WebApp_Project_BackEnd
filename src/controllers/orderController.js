@@ -204,9 +204,11 @@ exports.deleteOrder = (req, res) => {
 exports.getOrdersByUserId = (req, res) => {
     const userId = req.params.userId;
 
-    // Query to retrieve all orders for a specific user
+    // Updated query to retrieve additional order details
     const ordersQuery = `
-        SELECT o.*, u.username, u.email
+        SELECT 
+            o.id, o.order_date, o.addressShipping, o.total_amount, o.payment_status, o.payment_method,
+            u.username, u.email
         FROM orders o
         JOIN users u ON o.users_id = u.id
         WHERE o.users_id = ?`;
