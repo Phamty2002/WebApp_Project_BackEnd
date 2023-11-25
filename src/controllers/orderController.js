@@ -207,7 +207,7 @@ exports.getOrdersByUserId = (req, res) => {
     // Updated query to retrieve additional order details
     const ordersQuery = `
         SELECT 
-            o.id, o.order_date, o.addressShipping, o.total_amount, o.payment_status, o.payment_method,
+            o.id, o.order_date, o.addressShipping, o.status, o.total_amount, o.payment_status, o.payment_method,
             u.username, u.email
         FROM orders o
         JOIN users u ON o.users_id = u.id
