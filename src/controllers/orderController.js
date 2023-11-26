@@ -17,6 +17,8 @@ function getProductPrice(productId) {
     });
 }
 
+
+
 exports.placeOrder = (req, res) => {
     const { userId, items, addressShipping } = req.body;
     db.beginTransaction(async (err) => {

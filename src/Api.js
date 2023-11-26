@@ -9,11 +9,15 @@ const paymentRoutes = require('./routes/payment');
 const saveprofileRoutes = require('./routes/saveprofile');
 const changepasswordRoutes = require('./routes/changepassword');
 const updateUserInfoRoutes = require('./routes/updateUserInfo');
+const invoiceRoutes = require('./routes/invoice');
+
+
 
 
 
 const cors = require('cors');
 const app = express();
+const path = require('path');
 const { verifyToken } = require('./middleware/authMiddleware');
 require('dotenv').config();
 
@@ -21,6 +25,9 @@ require('dotenv').config();
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('./swagger')));
 
 app.use(express.json());
+
+// Serve static files from the invoices directory
+app.use('/invoices', express.static('src/invoices'));
 
 // CORS configuration
 const corsOptions = {
@@ -43,6 +50,8 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/saveprofile', saveprofileRoutes);
 app.use('/api/changepassword', changepasswordRoutes);
 app.use('/api/update', updateUserInfoRoutes );
+app.use('/api/invoice', invoiceRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
