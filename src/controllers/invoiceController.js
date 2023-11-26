@@ -50,6 +50,83 @@ exports.createInvoice = async (req, res) => {
     }
 };
 
+exports.createOrder = async (req, res) => {
+    // Extract order details from the request body
+    const { order_date, status, addShipping, payment_status, payment_method, users_id } = req.body;
+
+    try {
+        // Insert the order details into the database
+        const result = await insertOrder(order_date, status, addShipping, payment_status, payment_method, users_id);
+
+        // Fetch the generated order details from the database
+        const orderDetails = await getOrderDetails(result.insertId);
+
+        // Generate an invoice for the created order
+        const invoicePath = await generateInvoice(orderDetails);
+
+        res.json({ success: true, message: 'Order created', invoicePath });
+    } catch (error) {
+        console.error('Error creating order:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+// Insert order details into the database
+async function insertOrder(order_date, status, addShipping, payment_status, payment_method, users_id) {
+    return new Promise((resolve, reject) => {
+        const query = `
+            INSERT INTO orders (order_date, status, addShipping, payment_status, payment_method, users_id)
+            VALUES (?, ?, ?, ?, ?, ?)`;
+        db.query(query, [order_date, status, addShipping, payment_status, payment_method, users_id], (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+        });
+    });
+}
+
+// Fetch the order details along with user information
+async function getOrderDetails(orderId) {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT o.*, u.username, u.email, u.phone_number
+            FROM orders o
+            JOIN users u ON o.users_id = u.id
+            WHERE o.id = ?`;
+        db.query(query, [orderId], (err, results) => {
+            if (err) return reject(err);
+            if (results.length === 0) return reject(new Error('Order not found'));
+            resolve(results[0]);
+        });
+    });
+}
+
+// Fetch the user details
+async function getUserDetails(userId) {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT * FROM users WHERE id = ?';
+        db.query(query, [userId], (err, results) => {
+            if (err) return reject(err);
+            if (results.length === 0) return reject(new Error('User not found'));
+            resolve(results[0]);
+        });
+    });
+}
+
+// Fetch the items for a given order
+async function getOrderItems(orderId) {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT oi.*, p.name, p.price
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ?`;
+        db.query(query, [orderId], (err, results) => {
+            if (err) return reject(err);
+            resolve(results);
+        });
+    });
+}
+
 
 // A simple tax calculation function
 function calculateTax(amount) {
