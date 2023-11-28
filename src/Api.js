@@ -10,6 +10,7 @@ const saveprofileRoutes = require('./routes/saveprofile');
 const changepasswordRoutes = require('./routes/changepassword');
 const updateUserInfoRoutes = require('./routes/updateUserInfo');
 const invoiceRoutes = require('./routes/invoice');
+const invoice_empRoutes = require('./routes/invoice-emp');
 
 
 
@@ -51,6 +52,8 @@ app.use('/api/saveprofile', saveprofileRoutes);
 app.use('/api/changepassword', changepasswordRoutes);
 app.use('/api/update', updateUserInfoRoutes );
 app.use('/api/invoice', invoiceRoutes);
+app.use('/api/invoice-emp', invoice_empRoutes);
+
 
 
 // Error handling middleware

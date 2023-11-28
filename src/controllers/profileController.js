@@ -7,7 +7,7 @@ const saltRounds = 10;
 
 exports.addNewUser = (req, res) => {
   // Extract the user details from the request body
-  const { username, email, password, role } = req.body;
+  const { username, email, password, role, phone_number } = req.body;
 
   // Hash the password before saving it to the database
   bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
@@ -16,22 +16,22 @@ exports.addNewUser = (req, res) => {
       return res.status(500).json({ message: 'Error registering the user.' });
     } 
 
-  // Construct the SQL query to insert a new user
-  const query = 'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)';
-  const values = [username, email, hashedPassword, role];
+    // Construct the SQL query to insert a new user
+    const query = 'INSERT INTO users (username, email, password, role, phone_number) VALUES (?, ?, ?, ?, ?)';
+    const values = [username, email, hashedPassword, role, phone_number];
 
-  // Execute the query
-  db.query(query, values, (err, result) => {
-    if (err) {
-      console.error('Error adding new user:', err);
-      return res.status(500).json({ message: 'Error adding new user.' });
-    }
+    // Execute the query
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error('Error adding new user:', err);
+        return res.status(500).json({ message: 'Error adding new user.' });
+      }
 
-    // If the user was successfully added, send back a success message
-    // You might also want to send back the ID of the new user, but be careful not to expose sensitive information
-    return res.status(201).json({ message: 'New user added successfully.' });
+      // If the user was successfully added, send back a success message
+      // You might also want to send back the ID of the new user, but be careful not to expose sensitive information
+      return res.status(201).json({ message: 'New user added successfully.' });
+    });
   });
-});
 };
 
 exports.getProfileByUsername = (req, res) => {
@@ -53,11 +53,11 @@ exports.getProfileByUsername = (req, res) => {
 
 exports.updateProfileByUsername = (req, res) => {
   const username = req.params.username; // Get the username from request parameters
-  const { email } = req.body; // Include any other fields you allow to update, except the username
+  const { email, phone_number } = req.body; // Include the phone number along with other fields
 
-  // Assume validation and sanitization have been done
-  const query = 'UPDATE users SET email = ? WHERE username = ?';
-  const values = [email, username];
+  // Assume validation and sanitization have been done for both email and phone_number
+  const query = 'UPDATE users SET email = ?, phone_number = ? WHERE username = ?';
+  const values = [email, phone_number, username];
 
   db.query(query, values, (err, result) => {
     if (err) {
