@@ -13,6 +13,7 @@ const db = mysql.createConnection({
   host: 'food-database.cvpmqafzaqqx.us-east-1.rds.amazonaws.com',
   user: 'admin',
   password: 'Robertoty2002',
+  database: 'footweb',
   port     : 3306
 }); 
 

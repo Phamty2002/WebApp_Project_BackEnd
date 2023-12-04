@@ -12,7 +12,7 @@ exports.registerNewUser = (req, res) => {
 
   // Check if username, email, or phone_number already exists
   db.query(
-    'SELECT * FROM users WHERE username = ? OR email = ? OR phone_number = ?',
+    'SELECT * FROM user WHERE username = ? OR email = ? OR phone_number = ?',
     [username, email, phone_number],
     (err, rows) => {
       if (err) {
@@ -46,7 +46,7 @@ exports.registerNewUser = (req, res) => {
 
         // Save the new user with the hashed password
         db.query(
-          'INSERT INTO users (username, password, email, phone_number) VALUES (?, ?, ?, ?)',
+          'INSERT INTO user (username, password, email, phone_number) VALUES (?, ?, ?, ?)',
           [username, hash, email, phone_number],
           (err, result) => {
             if (err) {
