@@ -1,4 +1,4 @@
-const db = require('../db'); // Your database connection file
+const db = require('../db'); 
 const pdfGenerator = require('../utils/pdfGenerator');
 const fs = require('fs');
 const path = require('path');

@@ -11,7 +11,7 @@ const changepasswordRoutes = require('./routes/changepassword');
 const updateUserInfoRoutes = require('./routes/updateUserInfo');
 const invoiceRoutes = require('./routes/invoice');
 const invoice_empRoutes = require('./routes/invoice-emp');
-
+const contactRoutes = require('./routes/contact');
 
 
 
@@ -53,7 +53,7 @@ app.use('/api/changepassword', changepasswordRoutes);
 app.use('/api/update', updateUserInfoRoutes );
 app.use('/api/invoice', invoiceRoutes);
 app.use('/api/invoice-emp', invoice_empRoutes);
-
+app.use('/api/contact', contactRoutes);
 
 
 // Error handling middleware
