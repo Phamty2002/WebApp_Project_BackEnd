@@ -52,3 +52,26 @@ const transporter = nodemailer.createTransport({
       });
     });
   };
+
+  exports.getAllContacts = (req, res) => {
+    const query = 'SELECT * FROM contact_submissions';
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error fetching contacts' });
+        }
+        res.json({ contacts: results });
+    });
+};
+
+exports.getContactById = (req, res) => {
+    const query = 'SELECT * FROM contact_submissions WHERE id = ?';
+    db.query(query, [req.params.id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error fetching contact' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Contact not found' });
+        }
+        res.json({ contact: results[0] });
+    });
+};
