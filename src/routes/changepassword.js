@@ -84,4 +84,6 @@ const swaggerSpec = require('../swagger');
  */
 
 router.post('/password', ChangePasswordController.changePassword);
+router.post('/getPasswordToken', ChangePasswordController.requestPasswordReset);
+router.post('/reset-password', ChangePasswordController.resetPassword);
 module.exports = router;
