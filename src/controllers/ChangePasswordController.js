@@ -75,7 +75,7 @@ const sendResetEmail = async (email, resetToken) => {
     }
 };
 
-exports.requestPasswordReset = async (req, res) => { // Add "async" here
+exports.requestPasswordReset = async (req, res) => { 
     const { email } = req.body;
     if (!email) {
         return res.status(400).send({ message: 'Email is required' });
