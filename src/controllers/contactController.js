@@ -54,7 +54,7 @@ const transporter = nodemailer.createTransport({
   };
 
   exports.getAllContacts = (req, res) => {
-    const query = 'SELECT * FROM contact_submissions';
+    const query = 'SELECT * FROM contact_submissions ORDER BY submitted_at DESC';
     db.query(query, (err, results) => {
         if (err) {
             return res.status(500).json({ error: 'Error fetching contacts' });
