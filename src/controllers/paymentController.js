@@ -50,15 +50,26 @@ exports.processPayment = (req, res) => {
 exports.processRefund = (req, res) => {
     const { orderId } = req.body;
 
-    // Process the refund logic here, possibly interacting with a payment gateway
-
-    // Update the order to reflect the refund
-    db.query('UPDATE orders SET payment_status = ? WHERE id = ?', ['Refunded', orderId], (error, results) => {
+    // Check if the order with the specified ID exists
+    db.query('SELECT * FROM orders WHERE id = ?', [orderId], (error, results) => {
         if (error) {
-            return res.status(500).send('Error processing refund');
+            return res.status(500).send('Error checking order');
         }
 
-        res.status(200).send('Refund processed successfully');
+        if (results.length === 0) {
+            // No order found with the provided ID, return an error message
+            return res.status(404).send('Order not found');
+        }
+
+        // Update the order to reflect the refund
+        db.query('UPDATE orders SET payment_status = ? WHERE id = ?', ['Refunded', orderId], (error, updateResults) => {
+            if (error) {
+                return res.status(500).send('Error processing refund');
+            }
+
+            res.status(200).send('Refund processed successfully');
+        });
     });
 };
+
 
