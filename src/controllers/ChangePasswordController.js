@@ -110,25 +110,29 @@ exports.requestPasswordReset = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
     const { resetToken, newPassword, confirmPassword } = req.body;
+
+    // Check for required fields
     if (!resetToken || !newPassword || !confirmPassword) {
         return res.status(400).send({ message: 'resetToken, newPassword, and confirmPassword are required' });
     }
 
+    // Check if passwords match
     if (newPassword !== confirmPassword) {
         return res.status(400).send({ message: 'Passwords do not match' });
     }
 
     try {
-        // Check if the reset token and expiration time are valid
+        // Check if the reset token is valid and not expired
         const sql = 'SELECT * FROM users WHERE password_reset_code = ? AND password_reset_expires > NOW()';
-        const user = await db.query(sql, [resetToken]);
+        const [user] = await db.query(sql, [resetToken]);
 
-        if (user.length === 0) {
+        // If no user is found, or the token is expired
+        if (!user || user.length === 0) {
             return res.status(404).send({ message: 'Invalid reset token or expired' });
         }
 
         // Update the user's password
-        const hashedPassword = await bcrypt.hash(newPassword, 10); // You may need to use a password hashing library
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
         const updateSql = 'UPDATE users SET password = ?, password_reset_code = NULL, password_reset_expires = NULL WHERE password_reset_code = ?';
         await db.query(updateSql, [hashedPassword, resetToken]);
 
