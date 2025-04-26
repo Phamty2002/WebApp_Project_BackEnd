@@ -1,51 +1,62 @@
-const bcrypt = require('bcrypt');
+// src/controllers/loginController.js
+require('dotenv').config();
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
-require('dotenv').config();
+const util = require('util');
+
+// Biến db.query thành hàm promise
+const query = util.promisify(db.query).bind(db);
 
 exports.loginUser = async (req, res) => {
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
 
-  // Check the user's username in the database
-  db.query('SELECT * FROM users WHERE username = ?', [username], async (err, rows) => {
-    if (err) {
-      console.error('Error checking user credentials:', err);
-      return res.status(500).json({ message: 'Error checking credentials.' });
+    // 1. Validate input
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Username và password là bắt buộc.' });
     }
 
-    // Check if any user was returned
+    // 2. Lấy user từ DB
+    const rows = await query('SELECT * FROM users WHERE username = ?', [username]);
     if (rows.length === 0) {
-      // Avoid revealing that the username does not exist
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
-
     const user = rows[0];
-    // Compare provided password with the hashed password
+
+    // 3. So sánh mật khẩu
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
-      // Avoid revealing that the password was incorrect
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
+    // 4. Kiểm tra JWT_SECRET
     const jwtSecret = process.env.JWT_SECRET;
-    // Create a token with the user role
+    if (!jwtSecret) {
+      console.error('❌ Missing JWT_SECRET in .env');
+      return res.status(500).json({ message: 'Server configuration error.' });
+    }
+
+    // 5. Tạo token
     const token = jwt.sign(
       { userId: user.id, username: user.username, role: user.role },
-      jwtSecret, // Use an environment variable for the secret key
+      jwtSecret,
       { expiresIn: '24h' }
     );
 
-    // Authentication successful, return the token and user data
-    const userData = {
-      id: user.id,
-      username: user.username,
-      role: user.role
-    };
-
+    // 6. Trả về response
     return res.status(200).json({
       message: 'Login successful',
-      token: token,
-      user: userData
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role
+      }
     });
-  });
+
+  } catch (err) {
+    console.error('🔥 loginUser error:', err);
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
 };
